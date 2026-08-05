@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="refresh" content="900">
+<title>Bot Arena — scoreboard</title>
+<style>
+.viz-root {
+  color-scheme: light;
+  --surface-1:#fcfcfb; --page:#f9f9f7; --ink-1:#0b0b0b; --ink-2:#52514e;
+  --muted:#898781; --grid:#e1e0d9; --axis:#c3c2b7;
+  --series-1:#2a78d6; --series-2:#eb6834;
+  --good-text:#006300; --crit:#d03b3b; --ring:rgba(11,11,11,0.10);
+}
+@media (prefers-color-scheme: dark) {
+  :root:where(:not([data-theme="light"])) .viz-root {
+    color-scheme: dark;
+    --surface-1:#1a1a19; --page:#0d0d0d; --ink-1:#ffffff; --ink-2:#c3c2b7;
+    --muted:#898781; --grid:#2c2c2a; --axis:#383835;
+    --series-1:#3987e5; --series-2:#d95926;
+    --good-text:#0ca30c; --crit:#d03b3b; --ring:rgba(255,255,255,0.10);
+  }
+}
+body{margin:0;background:var(--page);color:var(--ink-1);
+  font:15px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif}
+.viz-root{max-width:640px;margin:0 auto;padding:18px 14px 40px}
+h1{font-size:19px;margin:0 0 2px}
+.sub{color:var(--ink-2);font-size:13px;margin-bottom:12px}
+.leader{font-size:14px;margin:6px 0 10px}
+.tiles{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 0}
+.tile{background:var(--surface-1);border:1px solid var(--ring);border-radius:12px;
+  padding:12px 14px}
+.tlabel{color:var(--ink-2);font-size:12px}
+.tvalue{font-size:27px;font-weight:650}
+.delta{font-size:14px} .delta.up{color:var(--good-text)} .delta.down{color:var(--crit)}
+.panel{background:var(--surface-1);border:1px solid var(--ring);border-radius:12px;
+  padding:12px 14px;margin:10px 0;overflow-x:auto}
+.tbl{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums}
+.tbl th{text-align:right;color:var(--muted);font-weight:500;font-size:12px;
+  padding:4px 0 6px 10px;border-bottom:1px solid var(--axis)}
+.tbl th:first-child{text-align:left;padding-left:0}
+.tbl td{padding:7px 0 7px 10px;border-bottom:1px solid var(--grid);text-align:right}
+.tbl td.k{text-align:left;color:var(--ink-2);padding-left:0}
+.num{font-variant-numeric:tabular-nums}
+.empty{color:var(--muted);padding:14px 2px;font-size:13px}
+.grid{stroke:var(--grid);stroke-width:1} .axis{stroke:var(--axis);stroke-width:1}
+.tick{fill:var(--muted);font-size:11px} .endlbl{font-size:12px;font-weight:600}
+.linechart{width:100%;height:auto;display:block}
+.chartwrap{position:relative}
+.xhair{stroke:var(--axis);stroke-width:1;stroke-dasharray:3 3}
+.tooltip{position:absolute;pointer-events:none;background:var(--surface-1);
+  border:1px solid var(--ring);border-radius:8px;padding:6px 10px;font-size:12px;
+  box-shadow:0 2px 8px rgba(0,0,0,.12);white-space:nowrap}
+footer{color:var(--muted);font-size:12px;margin-top:22px}
+</style></head>
+<body><div class="viz-root">
+<h1>Round 1 — Day traders: Claude (SCALPEL) vs ChatGPT</h1>
+<div class="sub">Started TBD · updated
+  Aug 05, 07:07 PM ET · refreshes nightly after the close</div>
+<div class="leader">Leader: <b>SCALPEL (Claude)</b></div>
+<div class="tiles"><div class="tile" style="border-top:4px solid var(--series-1)">
+  <div class="tlabel">SCALPEL (Claude)</div>
+  <div class="tvalue">$50,000</div><div class="delta up">▲ +0.00%</div></div><div class="tile" style="border-top:4px solid var(--series-2)">
+  <div class="tlabel">GPT-DAY (ChatGPT)</div>
+  <div class="tvalue">$50,000</div><div class="delta up">▲ +0.00%</div></div></div>
+<div class="panel"><div class="empty">Equity curves appear after the first scored trading day.</div></div>
+<div class="panel"><table class='tbl'><thead><tr><th></th><th>SCALPEL</th><th>GPT-DAY</th></tr></thead><tbody><tr><td class='k'>Total return %</td><td class='num'>0.0</td><td class='num'>0.0</td></tr><tr><td class='k'>Last day %</td><td class='num'>0.0</td><td class='num'>0.0</td></tr><tr><td class='k'>Max drawdown %</td><td class='num'>0.0</td><td class='num'>0.0</td></tr><tr><td class='k'>Sharpe (ann.)</td><td class='num'>—</td><td class='num'>—</td></tr><tr><td class='k'>Days scored</td><td class='num'>1</td><td class='num'>1</td></tr><tr><td class='k'>Stopped out</td><td class='num'>no</td><td class='num'>—</td></tr></tbody></table></div>
+<footer>Bot Arena · equal $50k paper accounts · scored on total return ·
+positions and signals are not published during the round (rules §2.3)</footer>
+</div>
+<script>
+document.querySelectorAll('.chartwrap').forEach(w => {
+  const data = JSON.parse(w.dataset.series || '[]');
+  if (!data.length) return;
+  const svg = w.querySelector('svg'), tip = w.querySelector('.tooltip'),
+        xh = w.querySelector('.xhair'), vb = svg.viewBox.baseVal;
+  const move = e => {
+    const r = svg.getBoundingClientRect();
+    const cx = (e.touches ? e.touches[0].clientX : e.clientX);
+    const mx = (cx - r.left) * vb.width / r.width;
+    let best = null;
+    data.forEach(s => s.points.forEach(p => {
+      const d = Math.abs(p[2] - mx);
+      if (!best || d < best.d) best = {d, date: p[0]};
+    }));
+    if (!best) return;
+    const rows = data.map(s => {
+      const p = s.points.find(q => q[0] === best.date);
+      return p ? `<div><span style="color:${s.color}">●</span> ${s.label}: ` +
+             `$${p[1].toLocaleString(undefined,{maximumFractionDigits:0})}</div>` : '';
+    }).join('');
+    const px = data.flatMap(s => s.points).find(q => q[0] === best.date);
+    xh.setAttribute('x1', px[2]); xh.setAttribute('x2', px[2]);
+    xh.style.display = '';
+    tip.innerHTML = `<b>${best.date}</b>${rows}`;
+    tip.style.display = 'block';
+    const lx = px[2] * r.width / vb.width;
+    tip.style.left = Math.min(lx + 12, r.width - tip.offsetWidth - 4) + 'px';
+    tip.style.top = '16px';
+  };
+  svg.addEventListener('mousemove', move);
+  svg.addEventListener('touchstart', move, {passive: true});
+  svg.addEventListener('touchmove', move, {passive: true});
+  svg.addEventListener('mouseleave', () => {
+    tip.style.display = 'none'; xh.style.display = 'none';
+  });
+});
+</script></body></html>
