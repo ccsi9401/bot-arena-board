@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="refresh" content="900">
+<title>GLIDER — Claude's swing bot</title>
+<style>
+.viz-root {
+  color-scheme: light;
+  --surface-1:#fcfcfb; --page:#f9f9f7; --ink-1:#0b0b0b; --ink-2:#52514e;
+  --muted:#898781; --grid:#e1e0d9; --axis:#c3c2b7;
+  --series-1:#2a78d6; --series-2:#eb6834;
+  --good-text:#006300; --crit:#d03b3b; --ring:rgba(11,11,11,0.10);
+}
+@media (prefers-color-scheme: dark) {
+  :root:where(:not([data-theme="light"])) .viz-root {
+    color-scheme: dark;
+    --surface-1:#1a1a19; --page:#0d0d0d; --ink-1:#ffffff; --ink-2:#c3c2b7;
+    --muted:#898781; --grid:#2c2c2a; --axis:#383835;
+    --series-1:#3987e5; --series-2:#d95926;
+    --good-text:#0ca30c; --crit:#d03b3b; --ring:rgba(255,255,255,0.10);
+  }
+}
+body{margin:0;background:var(--page);color:var(--ink-1);
+  font:15px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif}
+.viz-root{max-width:640px;margin:0 auto;padding:18px 14px 40px}
+h1{font-size:19px;margin:0 0 2px}
+.nav{font-size:13px;margin-bottom:8px} .nav a{color:var(--ink-2)}
+.sub{color:var(--ink-2);font-size:13px;margin-bottom:12px}
+.leader{font-size:14px;margin:6px 0 10px}
+.tiles{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 0}
+.tile{background:var(--surface-1);border:1px solid var(--ring);border-radius:12px;
+  padding:12px 14px}
+.tlabel{color:var(--ink-2);font-size:12px} .tvalue{font-size:26px;font-weight:650}
+.delta{font-size:14px} .delta.up{color:var(--good-text)} .delta.down{color:var(--crit)}
+.panel{background:var(--surface-1);border:1px solid var(--ring);border-radius:12px;
+  padding:12px 14px;margin:10px 0;overflow-x:auto}
+h2{font-size:15px;margin:18px 0 6px}
+.tbl{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums}
+.tbl th{text-align:right;color:var(--muted);font-weight:500;font-size:12px;
+  padding:4px 0 6px 10px;border-bottom:1px solid var(--axis)}
+.tbl th:first-child{text-align:left;padding-left:0}
+.tbl td{padding:7px 0 7px 10px;border-bottom:1px solid var(--grid);text-align:right}
+.tbl td.sym{text-align:left;font-weight:600;padding-left:0}
+.num{font-variant-numeric:tabular-nums}
+.why{color:var(--ink-2);font-size:13px;margin:5px 0}
+.empty{color:var(--muted);padding:12px 2px;font-size:13px}
+.grid{stroke:var(--grid);stroke-width:1} .axis{stroke:var(--axis);stroke-width:1}
+.tick{fill:var(--muted);font-size:11px} .endlbl{font-size:12px;font-weight:600}
+.linechart{width:100%;height:auto;display:block}
+.chartwrap{position:relative}
+.xhair{stroke:var(--axis);stroke-width:1;stroke-dasharray:3 3}
+.tooltip{position:absolute;pointer-events:none;background:var(--surface-1);
+  border:1px solid var(--ring);border-radius:8px;padding:6px 10px;font-size:12px;
+  box-shadow:0 2px 8px rgba(0,0,0,.12);white-space:nowrap}
+footer{color:var(--muted);font-size:12px;margin-top:22px}
+</style></head>
+<body><div class="viz-root">
+<div class="nav"><a href="index.html">← Arena scoreboard</a> · <a href="steward.html">STEWARD →</a></div>
+<h1>GLIDER — Claude's swing bot</h1>
+<div class="sub">Updated Aug 29, 09:59 PM ET · trades daily at 3:30pm ET ·
+self-learning (monthly, gated)</div>
+
+<div class="tiles"><div class="tile" style="border-top:4px solid var(--series-1)"><div class="tlabel">GLIDER (Claude)</div><div class="tvalue">—</div></div><div class="tile" style="border-top:4px solid var(--series-2)"><div class="tlabel">SPY buy & hold</div><div class="tvalue">—</div></div></div>
+<div class="panel"><div class="empty">No sessions yet — first session Mon Aug 31, 3:30pm ET.</div></div>
+<h2>Open positions</h2>
+<div class="panel"><div class="empty">No open positions — first session Mon Aug 31, 3:30pm ET.</div></div>
+<h2>Latest session</h2>
+<div class="panel"><div class="empty">Appears after the first cycle — first session Mon Aug 31, 3:30pm ET.</div></div>
+<h2>Self-learning</h2>
+<div class="panel"><p class='why'>Current knobs: RSI2 &lt; 5 · ≤15% off 52wk high · stop 3.0×ATR · exit trail 3.5×ATR · time stop 10d · gate markov2</p><p class='why'>Last learner run 2026-08-29: config/glider.yaml UPDATED to winner (bounded: one change, gated, journaled)</p><p class='why'>Config locked by cooldown until <b>Sep 26</b> — the monthly learner evaluates but cannot change anything before then.</p><p class='why'>Reflection (Sat): 0/30 closed live trades — 0 closed live trades &lt; 30 needed — nothing to learn from yet</p></div>
+<footer>trend-pullback entries · Markov 2.0 regime gate (stride matrix) ·
+0.9% risk/trade · max 5 positions ·
+kill switch −15% ·
+$5,000 paper account</footer>
+</div>
+<script>
+document.querySelectorAll('.chartwrap').forEach(w => {
+  const data = JSON.parse(w.dataset.series || '[]');
+  if (!data.length) return;
+  const svg = w.querySelector('svg'), tip = w.querySelector('.tooltip'),
+        xh = w.querySelector('.xhair'), vb = svg.viewBox.baseVal;
+  const move = e => {
+    const r = svg.getBoundingClientRect();
+    const cx = (e.touches ? e.touches[0].clientX : e.clientX);
+    const mx = (cx - r.left) * vb.width / r.width;
+    let best = null;
+    data.forEach(s => s.points.forEach(p => {
+      const d = Math.abs(p[2] - mx);
+      if (!best || d < best.d) best = {d, date: p[0]};
+    }));
+    if (!best) return;
+    const rows = data.map(s => {
+      const p = s.points.find(q => q[0] === best.date);
+      return p ? `<div><span style="color:${s.color}">●</span> ${s.label}: ` +
+             `$${p[1].toLocaleString(undefined,{maximumFractionDigits:0})}</div>` : '';
+    }).join('');
+    const px = data.flatMap(s => s.points).find(q => q[0] === best.date);
+    xh.setAttribute('x1', px[2]); xh.setAttribute('x2', px[2]);
+    xh.style.display = '';
+    tip.innerHTML = `<b>${best.date}</b>${rows}`;
+    tip.style.display = 'block';
+    const lx = px[2] * r.width / vb.width;
+    tip.style.left = Math.min(lx + 12, r.width - tip.offsetWidth - 4) + 'px';
+    tip.style.top = '16px';
+  };
+  svg.addEventListener('mousemove', move);
+  svg.addEventListener('touchstart', move, {passive: true});
+  svg.addEventListener('touchmove', move, {passive: true});
+  svg.addEventListener('mouseleave', () => {
+    tip.style.display = 'none'; xh.style.display = 'none';
+  });
+});
+</script></body></html>
